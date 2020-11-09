@@ -14,9 +14,6 @@
   <script defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB3b7E0j46EZELU-UjzhFjrxHVDkNL9lxg&callback=initMap">
 
-    
-
-
   </script>
 
   <?php
@@ -52,6 +49,8 @@
       while($row = $result->fetch_assoc()) {
         $array1 = array();
         array_push($array1, $row["place_name"], $row["lat"], $row["lng"]);
+
+        //locations is a 3d array with all the data in the database
         array_push($locations, $array1);
       }
     } else {
@@ -61,85 +60,73 @@
    
   ?>
 
-  <script>
+<script type="text/javascript">
 
+  var map;
+  var Markers = {};
+  var infowindow;
+  var locations = [
+    [
+      'Samsung Store Madeleine',
+      "<a href='https://youtu.be/CuAcKF31Opk'><div style='float:left'><img style='max-width: 100%;' src=https://img.youtube.com/vi/CuAcKF31Opk/hqdefault.jpg></div></a>",
+      48.8701925,
+      2.322897600000033,
+      0
+    ],
+    [
+      'Samsung Store Velizy',
+      '<strong>Samsung Store Velizy</strong><p>CC Velizy 2 <br>2 Avenue de l\'Europe <br>78140 Vélizy-Villacoublay<br>Niveau 0 Porte 3 <br>10h – 22h</p>',
+      48.78126899999999,
+      2.219588599999952,
+      1
+    ]
+  ];
+  var origin = new google.maps.LatLng(locations[0][2], locations[0][3]);
 
-      // var locations = [
-//         ['Bondi Beach', -33.890542, 151.274856, 4],
-//         ['Coogee Beach', -33.923036, 151.259052, 5],
-//         ['Cronulla Beach', -34.028249, 151.157507, 3],
-//         ['Manly Beach', -33.80010128657071, 151.28747820854187, 2],
-//         ['Maroubra Beach', -33.950198, 151.259302, 1]
-//       ];
+  function initMap() {
+    var mapOptions = {
+      zoom: 13,
+      center: origin
+    };
 
-    
-    var locations = <?php echo json_encode($locations); ?>;
-    var map;
-      // Initialize and add the map
-    function initMap() {
-        // The location of Uluru
+    map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
-        const contentString =
-          '<div id="content">' +
-          '<div id="siteNotice">' +
-          "</div>" +
-          '<h1 id="firstHeading" class="firstHeading">Uluru</h1>' +
-          '<div id="bodyContent">' +
-          "<p><b>Uluru</b>, also referred to as <b>Ayers Rock</b>, is a large " +
-          "sandstone rock formation in the southern part of the " +
-          "Northern Territory, central Australia. It lies 335&#160;km (208&#160;mi) " +
-          "south west of the nearest large town, Alice Springs; 450&#160;km " +
-          "(280&#160;mi) by road. Kata Tjuta and Uluru are the two major " +
-          "features of the Uluru - Kata Tjuta National Park. Uluru is " +
-          "sacred to the Pitjantjatjara and Yankunytjatjara, the " +
-          "Aboriginal people of the area. It has many springs, waterholes, " +
-          "rock caves and ancient paintings. Uluru is listed as a World " +
-          "Heritage Site.</p>" +
-          '<p>Attribution: Uluru, <a href="https://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194">' +
-          "https://en.wikipedia.org/w/index.php?title=Uluru</a> " +
-          "(last visited June 22, 2009).</p>" +
-          "</div>" +
-          "</div>";
+    infowindow = new google.maps.InfoWindow();
 
-        const infowindow = new google.maps.InfoWindow({
-          content: contentString,
-        });
-
-
-      // The marker, positioned at Uluru
-      var marker, i;
-      const MaroubraBeach = { lat: -33.92, lng: 151.25 };
-        // const BondiBeach = { lat: -33.890542, lng: 151.274856 };
-        // The map, centered at Uluru
-        map = new google.maps.Map(document.getElementById("map"), {
-          zoom: 9,
-          center: MaroubraBeach,
-        });
-        // var markerArray = [];
-
-      for (i = 0; i < locations.length; i++) {  
-        
-        marker = new google.maps.Marker({
-          position: new google.maps.LatLng(locations[i][1], locations[i][2]),
-          map: map,
-        });
-
-        // markerArray.push(marker);
-
-        marker.addListener("click", () => {
+    for(i=0; i<locations.length; i++) {
+      var position = new google.maps.LatLng(locations[i][2], locations[i][3]);
+      var marker = new google.maps.Marker({
+        position: position,
+        map: map,
+      });
+      google.maps.event.addListener(marker, 'click', (function(marker, i) {
+        return function() {
+          console.log("The value of i is " + i);
+          //If marker is clicked
+          infowindow.setContent(locations[i][1]);
+          infowindow.setOptions({maxWidth: 200});
           infowindow.open(map, marker);
-        });
-        
-      }
-
-
+        }
+      }) (marker, i));
+      Markers[locations[i][4]] = marker;
     }
 
+    locate(0);
+
+  }
+
+  function locate(marker_id) {
+    var myMarker = Markers[marker_id];
+    var markerPosition = myMarker.getPosition();
+    map.setCenter(markerPosition);
+    google.maps.event.trigger(myMarker, 'click');
+  }
+
+  google.maps.event.addDomListener(window, 'load', initialize);
 
 
-  
-    
-  </script>
+
+</script>
 
 </body>
 </html>
