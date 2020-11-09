@@ -23,15 +23,10 @@
     $password = "";
     $dbname = "test";
 
-    $array = array("Bondi Beach",-33.890542,151.274856);
 
     $locations = array();
 
-    array_push($locations, $array);
-
-    $array = array("Coogee Beach",-33.923036,151.259052);
-
-    array_push($locations, $array);
+   
 
 
     // Create connection
@@ -48,7 +43,13 @@
       // output data of each row
       while($row = $result->fetch_assoc()) {
         $array1 = array();
-        array_push($array1, $row["place_name"], $row["lat"], $row["lng"]);
+        $youtubeLinkID = $row['youtube_link_id'];
+        array_push($array1, 
+        (int)$row["id"], 
+        $row["place_name"], 
+        "<a href='https://youtu.be/$youtubeLinkID'><div style='float:left'><img style='max-width: 100%;' src=https://img.youtube.com/vi/$youtubeLinkID/hqdefault.jpg></div></a>",
+        (float)$row["lat"], 
+        (float)$row["lng"]);
 
         //locations is a 3d array with all the data in the database
         array_push($locations, $array1);
@@ -65,23 +66,27 @@
   var map;
   var Markers = {};
   var infowindow;
-  var locations = [
-    [
-      'Samsung Store Madeleine',
-      "<a href='https://youtu.be/CuAcKF31Opk'><div style='float:left'><img style='max-width: 100%;' src=https://img.youtube.com/vi/CuAcKF31Opk/hqdefault.jpg></div></a>",
-      48.8701925,
-      2.322897600000033,
-      0
-    ],
-    [
-      'Samsung Store Velizy',
-      '<strong>Samsung Store Velizy</strong><p>CC Velizy 2 <br>2 Avenue de l\'Europe <br>78140 Vélizy-Villacoublay<br>Niveau 0 Porte 3 <br>10h – 22h</p>',
-      48.78126899999999,
-      2.219588599999952,
-      1
-    ]
-  ];
-  var origin = new google.maps.LatLng(locations[0][2], locations[0][3]);
+  var locations = <?php echo json_encode($locations); ?>;
+  console.log(locations);
+  // var locationsssss = [
+  //   [
+  //     0,
+  //     'Samsung Store Madeleine',
+  //     "<a href='https://youtu.be/CuAcKF31Opk'><div style='float:left'><img style='max-width: 100%;' src=https://img.youtube.com/vi/CuAcKF31Opk/hqdefault.jpg></div></a>",
+  //     48.8701925,
+  //     2.322897600000033
+  //   ],
+
+  //   [
+  //     1,
+  //     'Samsung Store Velizy',
+  //     '<strong>Samsung Store Velizy</strong><p>CC Velizy 2 <br>2 Avenue de l\'Europe <br>78140 Vélizy-Villacoublay<br>Niveau 0 Porte 3 <br>10h – 22h</p>',
+  //     48.78126899999999,
+  //     2.219588599999952
+  //   ]
+  // ];
+  // console.log(locationsssss);
+  var origin = new google.maps.LatLng(locations[0][3], locations[0][4]);
 
   function initMap() {
     var mapOptions = {
@@ -94,7 +99,7 @@
     infowindow = new google.maps.InfoWindow();
 
     for(i=0; i<locations.length; i++) {
-      var position = new google.maps.LatLng(locations[i][2], locations[i][3]);
+      var position = new google.maps.LatLng(locations[i][3], locations[i][4]);
       var marker = new google.maps.Marker({
         position: position,
         map: map,
@@ -103,12 +108,12 @@
         return function() {
           console.log("The value of i is " + i);
           //If marker is clicked
-          infowindow.setContent(locations[i][1]);
+          infowindow.setContent(locations[i][2]);
           infowindow.setOptions({maxWidth: 200});
           infowindow.open(map, marker);
         }
       }) (marker, i));
-      Markers[locations[i][4]] = marker;
+      Markers[locations[i][0]] = marker;
     }
 
     locate(0);
